@@ -100,12 +100,12 @@ int main(int argc, char* argv[]) {
 		l = SearchLeft(left);
 		r = SearchRight(right);
 			
-		if (!ExistanceLeft(left))
-			std::cout<<"0";
-		else 
+		if (l < 0 || r < 0)
+			resultAmountPrimes = 0;
+		else
 			resultAmountPrimes = AmountOfPrimes(l, r);
-			std::cout<<resultAmountPrimes<<std::endl;
-			i++;
+		std::cout << resultAmountPrimes << std::endl;
+		i++;
 
 	}
 
