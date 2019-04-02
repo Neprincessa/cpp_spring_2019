@@ -4,26 +4,22 @@ using cell = signed char;
 
 class BigInt
 {
-	///main variables
 	bool sign;
 	size_t size;
 	size_t cells_amount = 10;
 	cell* elements = nullptr;
 	
-	///to control cells
 	void push_back(cell new_element);
 	void allocate();
 	void delete_zeros();
-	bool compareLess( const BigInt& otherNumber) const;
-
+	bool compareAbsolute( const BigInt& otherNumber) const;
+	
 public:
-	///constructos, destructors
 	BigInt();
 	BigInt(int64_t new_element);
 	BigInt(const BigInt& other);
 	~BigInt();
-
-	///operators and functions
+	
 	BigInt abc() const;
 	BigInt operator+(const BigInt& other) const;
 	BigInt operator-() const;
@@ -70,7 +66,7 @@ void BigInt::delete_zeros()
 BigInt::BigInt() : sign(false), size(0)
 {
 	elements = new cell[cells_amount];
-	//push_back(0);
+	push_back(0);
 }
 
 BigInt::BigInt(int64_t new_element) : size(0)
@@ -115,46 +111,90 @@ BigInt BigInt::abc() const
 		return *this;
 }
 
+
 BigInt BigInt::operator+(const BigInt& other) const
 {
-	size_t min, max;
-	bool bigger;
-	if (size <= other.size)
-	{
-		min = size;
-		max = other.size;
-		bigger = true;
-	}
-	else
-	{
-		min = other.size;
-		max = size;
-		bigger = false;
-	}
 	BigInt res;
-	for (size_t i = 0; i < min; i++) 
-	{
-		res.push_back(this->elements[i] + other.elements[i]);
-	}
-	for (size_t i = min; i < max; i++) 
-	{
-		if(bigger)
-			res.push_back(other.elements[i]);
-		else
-			res.push_back(this->elements[i]);
-	}
-	cell buf = 0;
-	for(size_t i = 0; i < res.size; i++)
-	{
-		res.elements[i] += buf;
-		buf = 0;
-		if(res.elements[i] >= 10){
-			buf = res.elements[i] / 10;
-			res.elements[i] = res.elements[i] % 10;
+	res.size = 0;
+	size_t max = size > other.size ? size : other.size;
+	if(sign == other.sign){
+		cell buf = 0;
+		for(size_t i = 0; i < max; i++){
+			if (i < size)
+				buf += elements[i];
+			if (i < other.size)
+				buf += other.elements[i];
+			res.push_back(buf);
+			buf = 0;
 		}
+		res.sign = sign;
+		cell tmp = 0;
+		
+		
+		for(size_t i = 0; i < res.size; i++){	//if digit > 10
+			res.elements[i] += tmp;
+			tmp = 0;
+			if(res.elements[i] >= 10){
+				tmp = res.elements[i] / 10;
+				res.elements[i] = res.elements[i] % 10;
+			}
+		}
+		if(tmp)
+			res.push_back(tmp);
 	}
-	if(buf)
-		res.push_back(buf);
+	else{
+	
+		cell this_sign;
+		cell other_sign;
+		
+		if(this->abc() < other.abc()){
+			this_sign = -1;
+			other_sign = 1;
+			res.sign = other.sign;
+		}
+		else
+		{
+			this_sign = 1;
+			other_sign = -1;
+			res.sign = sign;
+			if (this->abc() == other.abc()) {
+				res.sign = false;
+			}
+		}
+
+		cell buf = 0;
+		for(size_t i = 0; i < max; i++){
+			if(i < size)
+				buf += this_sign * elements[i];
+			if(i < other.size)
+				buf += other_sign * other.elements[i];
+			res.push_back(buf);
+			buf = 0;
+		}
+		
+	
+		for(size_t i = 0; i < res.size - 1; i++)  //if digit < 0
+		{
+			signed char tmp = res.elements[i];
+			int tmp_int = (int)tmp;
+			
+			if(res.elements[i] < 0){
+				res.elements[i+1] -= 1;
+				res.elements[i] += 10;
+			}
+		}
+		
+		if(res.elements[res.size - 1] < 0)
+		{
+			res.elements[res.size - 1] *= -1;
+		}
+		res.delete_zeros();
+		
+	}
+	
+	if(!res.size)
+		res.size++;
+	
 	return res;
 }
 
@@ -215,51 +255,52 @@ std::ostream& operator << (std::ostream& os, const BigInt& num)
 }
 
 
-bool BigInt::operator<(const BigInt& other) const 
+bool BigInt::operator<(const BigInt& other) const
 {
-	if (!sign && !other.sign) //positive < negative
+	if (!sign && other.sign) //positive < negative
 		return false;
-	else 
+	else
 		if (sign && !other.sign) //negative < positive
 			return true;
 		else
 		{
 			if (sign) //negative  && negative
 			{
-				this->abc();
-				other.abc();
-				if (compareLess(other))
+				//(this->abc()).compareAbsolute(other.abc());
+				//other.abc();
+				if ((this->abc()).compareAbsolute(other.abc()))
 					return false;
 				else
 					return true;
 			}
-
-			return (compareLess(other));
-		
+			
+			return (compareAbsolute(other));
+			
 		}
 }
 
 
-bool BigInt::compareLess(const  BigInt& otherNumber) const
+bool BigInt::compareAbsolute(const  BigInt& otherNumber) const//check if this less than other
 {
-	int flag = 0; 
-				
-			if (size < otherNumber.size ) // first number absolutely larger than second
-				return true;
+	if (size < otherNumber.size) // first number absolutely less than second
+		return true;
+	else
+		if (size > otherNumber.size) // first positive 100% bigger than second
+			return false;
+	
+		for (int i = size - 1; i > -1; i-- )
+		{
+			if (elements[i] > otherNumber.elements[i]) //the fist digit of first number that is bigger than second
+				return false;
 			else
-				if (size > otherNumber.size) // first positive 100% bigger than second
-					return false;
-				else //if they has equal sizes
-				{
-					for (size_t i = size - 1; i > 0; i++ )
-						if (elements[i] > otherNumber.elements[i]) //the fist digit of first number that is bigger than second
-							return false;
+				if (elements[i] < otherNumber.elements[i])
 					return true;
-				}
-			
+		}
+	
+	return false;
 }
 
-bool BigInt::operator>(const BigInt& other) const 
+bool BigInt::operator>(const BigInt& other) const
 {
 	if (!sign && other.sign) // positive > negative
 		return true;
@@ -270,22 +311,23 @@ bool BigInt::operator>(const BigInt& other) const
 		{
 			if (sign)
 			{
-				this->abc();
-				other.abc();
-				if (compareLess(other))
+				if ((this->abc()).compareAbsolute(other.abc()))
 					return true;
 				else
 					return false;
 			}
 			
-			return !(compareLess(other));
+			if (*this == other)
+				return false;
+			else
+				return !(compareAbsolute(other));
 		}
 }
 
 
-bool BigInt::operator<=(const BigInt& other) const 
+bool BigInt::operator<=(const BigInt& other) const
 {
-	if (*this < other) 
+	if (*this < other)
 		return true;
 	else
 	{
@@ -295,14 +337,14 @@ bool BigInt::operator<=(const BigInt& other) const
 	}
 }
 
-bool BigInt::operator>=(const BigInt& other) const 
+bool BigInt::operator>=(const BigInt& other) const
 {
 	if (*this > other)
 		return true;
 	else
 	{
 		if (*this < other)
-			return false; 
+			return false;
 		return true;
 	}
 }
