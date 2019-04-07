@@ -8,18 +8,18 @@ class BigInt
 	size_t size;
 	size_t cells_amount = 10;
 	cell* elements = nullptr;
-	
+
 	void push_back(cell new_element);
 	void allocate();
 	void delete_zeros();
 	bool compareAbsolute( const BigInt& otherNumber) const;
-	
+
 public:
 	BigInt();
 	BigInt(int64_t new_element);
 	BigInt(const BigInt& other);
 	~BigInt();
-	
+
 	BigInt abc() const;
 	BigInt operator+(const BigInt& other) const;
 	BigInt operator-() const;
@@ -77,9 +77,9 @@ BigInt::BigInt(int64_t new_element) : size(0)
 	}
 	else
 		sign = false;
-	
+
 	elements = new cell[cells_amount];
-	
+
 	if(!new_element)
 		push_back(0);
 	else{
@@ -129,8 +129,8 @@ BigInt BigInt::operator+(const BigInt& other) const
 		}
 		res.sign = sign;
 		cell tmp = 0;
-		
-		
+
+
 		for(size_t i = 0; i < res.size; i++){	//if digit > 10
 			res.elements[i] += tmp;
 			tmp = 0;
@@ -143,10 +143,10 @@ BigInt BigInt::operator+(const BigInt& other) const
 			res.push_back(tmp);
 	}
 	else{
-	
+
 		cell this_sign;
 		cell other_sign;
-		
+
 		if(this->abc() < other.abc()){
 			this_sign = -1;
 			other_sign = 1;
@@ -171,30 +171,30 @@ BigInt BigInt::operator+(const BigInt& other) const
 			res.push_back(buf);
 			buf = 0;
 		}
-		
-	
+
+
 		for(size_t i = 0; i < res.size - 1; i++)  //if digit < 0
 		{
 			signed char tmp = res.elements[i];
 			int tmp_int = (int)tmp;
-			
+
 			if(res.elements[i] < 0){
 				res.elements[i+1] -= 1;
 				res.elements[i] += 10;
 			}
 		}
-		
+
 		if(res.elements[res.size - 1] < 0)
 		{
 			res.elements[res.size - 1] *= -1;
 		}
 		res.delete_zeros();
-		
+
 	}
-	
+
 	if(!res.size)
 		res.size++;
-	
+
 	return res;
 }
 
@@ -236,7 +236,7 @@ BigInt& BigInt::operator=(const BigInt& other)
 	sign = other.sign;
 	size = other.size;
 	cells_amount = other.cells_amount;
-	
+
 	delete[] elements;
 	elements = new cell[cells_amount];
 	for(size_t i = 0; i < size; ++i)
@@ -257,96 +257,51 @@ std::ostream& operator << (std::ostream& os, const BigInt& num)
 
 bool BigInt::operator<(const BigInt& other) const
 {
-	if (!sign && other.sign) //positive < negative
-		return false;
-	else
-		if (sign && !other.sign) //negative < positive
+	if (!sign && other.sign)
+			return false;
+		else if (sign && !other.sign)
 			return true;
-		else
-		{
-			if (sign) //negative  && negative
-			{
-				//(this->abc()).compareAbsolute(other.abc());
-				//other.abc();
-				if ((this->abc()).compareAbsolute(other.abc()))
-					return false;
-				else
-					return true;
-			}
-			
-			return (compareAbsolute(other));
-			
-		}
+		else if (*this == other)
+			return false;
+		return sign ? !compareAbsolute(other) : compareAbsolute(other);
 }
 
 
 bool BigInt::compareAbsolute(const  BigInt& otherNumber) const//check if this less than other
 {
-	if (size < otherNumber.size) // first number absolutely less than second
-		return true;
-	else
-		if (size > otherNumber.size) // first positive 100% bigger than second
+
+	if (size < otherNumber.size)
+			return true;
+		else if (size > otherNumber.size)
 			return false;
-	
+
 		for (int i = size - 1; i > -1; i-- )
-		{
-			if (elements[i] > otherNumber.elements[i]) //the fist digit of first number that is bigger than second
-				return false;
-			else
-				if (elements[i] < otherNumber.elements[i])
-					return true;
-		}
-	
-	return false;
+			if (elements[i] != otherNumber.elements[i])
+				return (elements[i] < otherNumber.elements[i]);
+		return false;
 }
 
 bool BigInt::operator>(const BigInt& other) const
 {
-	if (!sign && other.sign) // positive > negative
-		return true;
-	else
-		if (sign && !other.sign)	//negative > positive
+	if (!sign && other.sign)
+			return true;
+		else if (sign && !other.sign)
 			return false;
-		else
-		{
-			if (sign)
-			{
-				if ((this->abc()).compareAbsolute(other.abc()))
-					return true;
-				else
-					return false;
-			}
-			
-			if (*this == other)
-				return false;
-			else
-				return !(compareAbsolute(other));
-		}
+		else if (*this == other)
+			return false;
+		return sign ? compareAbsolute(other) : !compareAbsolute(other);
 }
 
 
 bool BigInt::operator<=(const BigInt& other) const
 {
-	if (*this < other)
-		return true;
-	else
-	{
-		if ( *this > other)
-			return false;
-		return true;
-	}
+	return !(*this > other);
 }
 
 bool BigInt::operator>=(const BigInt& other) const
 {
-	if (*this > other)
-		return true;
-	else
-	{
-		if (*this < other)
-			return false;
-		return true;
-	}
+
+	return !(*this < other);
 }
 
 #endif /* bigint_h */
