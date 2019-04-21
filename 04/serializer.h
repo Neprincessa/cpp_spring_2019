@@ -64,9 +64,9 @@ public:
     }
 
     template <class... ArgsT>
-    Error operator()(ArgsT... args)
+    Error operator()(ArgsT&&... args)
     {
-        return process(args...);
+	return process(std::forward<ArgsT>(args)...);
     }
 
 };
@@ -130,16 +130,16 @@ public:
 	}
 
 	template <class T>
-	    Error load(T& object)
-		{
-	        return object.serialize(*this);
-	    }
+	Error load(T& object)
+	{
+		return object.serialize(*this);
+	}
 
 	template <class... ArgsT>
-	   Error operator()(ArgsT&&... args)
-	   {
-	       return process(args...);
-	   }
+	Error operator()(ArgsT&&... args)
+	{
+		return process(std::forward<ArgsT>(args)...);
+	}
 };
 
 
