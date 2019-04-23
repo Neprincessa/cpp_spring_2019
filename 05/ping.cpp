@@ -2,7 +2,7 @@
 #include <mutex>
 #include <thread>
 
-#define N 500000
+const int N = 500000;
 
 std::mutex m1;
 std::mutex m2;
