@@ -124,10 +124,16 @@ void Sort_by_threads::Tsort(const int id, std::string & res) { //res - имя и
 	}
 	std::unique_lock<std::mutex> fLock(sortDoneMutex);
 	++finishedSort;
-	if (finishedSort == threadCount) {//все потоки завершили работу, текущий был последним
-		if (outputFiles.empty())//если нет ничего в очереди ??? ошибка
-			throw std::logic_error("no output files");
-		else
-			res = outputFiles.front();//воызращаем имя результата
+	try
+	{
+		if (finishedSort == threadCount) {//все потоки завершили работу, текущий был последним
+			if (outputFiles.empty())//если нет ничего в очереди ??? ошибка
+				throw std::logic_error("no output files");
+			else
+				res = outputFiles.front();//воызращаем имя результата
+		}
+	}
+	catch(std::logic_error &) {
+		globalExceptionPtr = std::current_exception(); 
 	}
 }

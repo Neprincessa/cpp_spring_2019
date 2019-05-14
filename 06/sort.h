@@ -11,6 +11,7 @@
 #include <string>
 #include <exception>
 
+ static std::exception_ptr globalExceptionPtr = nullptr; 
 
 class Sort_by_threads
 {
@@ -47,6 +48,8 @@ public:
 		for (int i = 0; i < threadCount; ++i) {
 			threads[i].join();
 		}
+		if (globalExceptionPtr)
+			std::rethrow_exception(globalExceptionPtr); 
 	}
 	
 	~Sort_by_threads(){ //очистка выделенной памяти по буфер

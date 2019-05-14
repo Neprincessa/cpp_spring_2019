@@ -11,9 +11,6 @@ int main(int argc, char ** argv){
 		else
 			throw std::invalid_argument("incorrect number of arguments");
 	}
-	catch(std::invalid_argument err){
-		std::cerr << err.what() << std::endl;
-	}
 	catch(std::logic_error err){
 		std::cerr << err.what() << std::endl;
 	}
