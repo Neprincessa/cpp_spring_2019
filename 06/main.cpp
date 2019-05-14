@@ -6,10 +6,13 @@ int main(int argc, char ** argv){
 		if(argc == 2){
 			Sort_by_threads thr(6 * 1024 * 1024, argv[1]);
 			thr.sort(res);
-			std::cout << res << std::endl;
+			std::cout << "all done, result in: " << res << std::endl;
 		}
 		else
 			throw std::invalid_argument("incorrect number of arguments");
+	}
+	catch(std::invalid_argument err){
+		std::cerr << err.what() << std::endl;
 	}
 	catch(std::logic_error err){
 		std::cerr << err.what() << std::endl;
