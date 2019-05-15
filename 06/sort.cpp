@@ -1,12 +1,5 @@
 #include "sort.h"
 
-std::atomic<int> finishedStep = 0;
-std::atomic<int> finishedSort = 0;
-std::condition_variable condition;
-std::mutex sortDoneMutex;
-std::mutex queueMutex;
-std::mutex streamReadMutex;
-std::mutex iterationFinishMutex;
 
 void Sort_by_threads::split(uint64_t * const buffer, const int id) //buffer - указатель на выделенную потоку память, id - номер потока
 {

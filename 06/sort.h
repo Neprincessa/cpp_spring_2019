@@ -11,7 +11,7 @@
 #include <string>
 #include <exception>
 
- static std::exception_ptr globalExceptionPtr = nullptr; 
+ 
 
 class Sort_by_threads
 {
@@ -21,13 +21,22 @@ class Sort_by_threads
 	uint64_t * buf; //указатель на выделенную память
 	std::ifstream inputStream; //входной поток для данных
 	std::queue<std::string> outputFiles; //очередь из названий выходных файлов
+	std::exception_ptr globalExceptionPtr = nullptr; 
 
-
+	std::atomic<int> finishedStep = 0;
+	std::atomic<int> finishedSort = 0;
+	std::condition_variable condition;
+	std::mutex sortDoneMutex;
+	std::mutex queueMutex;
+	std::mutex streamReadMutex;
+	std::mutex iterationFinishMutex;
+	
 	void split(uint64_t * const buffer, const int id); //метод для разделения на memLimit блоки и сортировка их
 
 	void merge(const std::string & fileName1, const std::string & fileName2, uint64_t * const buffer, const int id, const int iter, const int file); //объединение двух файлов в один с сохранением отсортированности
 
 	void Tsort(const int id, std::string & res); //разделение сортировки на потоки
+
 
 public:
 	Sort_by_threads(size_t _memLimit, std::string _data) : // конструктор, попутно задает пределы для памяти
